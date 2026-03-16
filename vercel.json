@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/vaxter", "destination": "/vaxter.html" },
+    { "source": "/vaxt", "destination": "/vaxt.html" }
+  ]
+}

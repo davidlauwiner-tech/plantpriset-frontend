@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alla växter – Plantpriset</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #F7F4EF; --dark: #1C1C1A; --green: #3D6B4F;
+      --green-light: #C8DDD0; --warm-gray: #8C8880; --border: #E2DDD7; --white: #ffffff;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--dark); }
+
+    nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.25rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(247,244,239,0.95); backdrop-filter: blur(8px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; color: var(--dark); text-decoration: none; letter-spacing: -0.02em; }
+    .logo span { color: var(--green); }
+    nav ul { list-style: none; display: flex; gap: 2rem; align-items: center; }
+    nav ul a { text-decoration: none; font-size: 0.875rem; color: var(--warm-gray); transition: color 0.2s; }
+    nav ul a:hover, nav ul a.active { color: var(--dark); font-weight: 500; }
+    .nav-cta { background: var(--green) !important; color: #fff !important; padding: 0.5rem 1.1rem; border-radius: 2rem; }
+
+    /* PAGE HEADER */
+    .page-header {
+      padding: 2.5rem 3rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; gap: 2rem; flex-wrap: wrap;
+    }
+    .page-header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 600; letter-spacing: -0.03em; }
+    .page-header p { font-size: 0.85rem; color: var(--warm-gray); margin-top: 0.25rem; }
+
+    .search-wrap { position: relative; width: 300px; flex-shrink: 0; }
+    .search-wrap input {
+      width: 100%; padding: 0.7rem 1rem 0.7rem 2.6rem;
+      font-family: 'DM Sans', sans-serif; font-size: 0.875rem;
+      border: 1.5px solid var(--border); border-radius: 3rem; background: var(--white);
+      color: var(--dark); outline: none; transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color: var(--green); }
+    .search-wrap input::placeholder { color: #B5B0AA; }
+    .s-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--warm-gray); pointer-events: none; }
+
+    /* LAYOUT */
+    .layout { display: grid; grid-template-columns: 220px 1fr; }
+
+    /* SIDEBAR */
+    .sidebar {
+      border-right: 1px solid var(--border); padding: 1.75rem 1.25rem;
+      position: sticky; top: 65px; height: calc(100vh - 65px); overflow-y: auto;
+    }
+    .filter-group { margin-bottom: 1.75rem; }
+    .filter-title { font-size: 0.68rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 0.6rem; }
+    .filter-btn {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; padding: 0.45rem 0.65rem; border: 1px solid transparent; border-radius: 6px;
+      background: none; font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+      color: var(--dark); cursor: pointer; transition: all 0.15s; text-align: left; margin-bottom: 0.15rem;
+    }
+    .filter-btn:hover { background: var(--white); border-color: var(--border); }
+    .filter-btn.active { background: var(--green-light); border-color: var(--green); color: var(--green); font-weight: 500; }
+    .f-count { font-size: 0.72rem; color: var(--warm-gray); background: var(--cream); padding: 0.1rem 0.4rem; border-radius: 2rem; }
+    .filter-btn.active .f-count { background: rgba(255,255,255,0.7); color: var(--green); }
+    .clear-btn {
+      width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+      color: var(--warm-gray); cursor: pointer; margin-top: 0.5rem; transition: all 0.15s;
+    }
+    .clear-btn:hover { border-color: var(--dark); color: var(--dark); }
+
+    /* MAIN */
+    .main { padding: 1.75rem 2rem; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .res-count { font-size: 0.82rem; color: var(--warm-gray); }
+    .res-count strong { color: var(--dark); }
+    .sort-select {
+      font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--dark);
+      background: var(--white); border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.4rem 0.75rem; outline: none; cursor: pointer;
+    }
+
+    /* ACTIVE FILTER CHIPS */
+    .active-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.75rem; background: var(--green-light); color: var(--green);
+      border: 1px solid var(--green); padding: 0.25rem 0.65rem; border-radius: 2rem;
+    }
+    .chip button { background: none; border: none; cursor: pointer; font-size: 0.85rem; color: var(--green); line-height: 1; padding: 0; }
+
+    /* GRID */
+    .plant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.9rem; }
+    .plant-card {
+      background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; cursor: pointer;
+      transition: border-color 0.2s, transform 0.18s, box-shadow 0.18s;
+      animation: fadeUp 0.22s ease forwards; opacity: 0; text-decoration: none; color: inherit; display: block;
+    }
+    .plant-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.07); }
+    .card-img { height: 90px; background: linear-gradient(135deg, var(--green-light), #deeae3); display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+    .card-body { padding: 0.85rem; }
+    .type-badge { display: inline-block; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); background: var(--green-light); padding: 0.15rem 0.5rem; border-radius: 2rem; margin-bottom: 0.4rem; }
+    .card-name { font-family: 'Playfair Display', serif; font-size: 0.98rem; font-weight: 600; line-height: 1.2; margin-bottom: 0.12rem; }
+    .card-latin { font-size: 0.72rem; font-style: italic; color: var(--warm-gray); margin-bottom: 0.5rem; }
+    .card-attrs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.55rem; }
+    .attr { font-size: 0.68rem; color: var(--warm-gray); background: var(--cream); padding: 0.18rem 0.45rem; border-radius: 4px; }
+    .card-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 0.6rem; border-top: 1px solid var(--border); }
+    .c-price { font-size: 0.78rem; color: var(--warm-gray); }
+    .c-price strong { font-size: 0.92rem; color: var(--green); font-weight: 600; }
+    .c-cta { font-size: 0.72rem; font-weight: 500; color: var(--green); }
+
+    /* EMPTY */
+    .empty { text-align: center; padding: 4rem 2rem; color: var(--warm-gray); grid-column: 1/-1; }
+    .empty .e-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .empty p { font-size: 0.875rem; }
+
+    /* PAGINATION */
+    .pagination { display: flex; justify-content: center; gap: 0.4rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .pg-btn {
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 6px; background: var(--white);
+      font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all 0.15s;
+    }
+    .pg-btn:hover, .pg-btn.active { border-color: var(--green); background: var(--green); color: var(--white); }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 0.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* BREADCRUMB */
+    .breadcrumb { padding: 0.75rem 3rem; font-size: 0.78rem; color: var(--warm-gray); border-bottom: 1px solid var(--border); }
+    .breadcrumb a { color: var(--warm-gray); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--dark); }
+    .breadcrumb span { margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Plant<span>priset</span></a>
+  <ul>
+    <li><a href="vaxter.html" class="active">Växter</a></li>
+    <li><a href="vaxter.html?type=seed">Frön</a></li>
+    <li><a href="vaxter.html?type=tool">Verktyg</a></li>
+    <li><a href="index.html" class="nav-cta">Hem</a></li>
+  </ul>
+</nav>
+
+<div class="breadcrumb">
+  <a href="index.html">Hem</a><span>›</span><span>Växter</span>
+</div>
+
+<div class="page-header">
+  <div>
+    <h1 id="pageTitle">Alla växter</h1>
+    <p id="pageSubtitle">Laddar…</p>
+  </div>
+  <div class="search-wrap">
+    <svg class="s-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Filtrera växter…" autocomplete="off">
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="filter-group">
+      <div class="filter-title">Typ av växt</div>
+      <button class="filter-btn active" data-type="" onclick="setFilter('type','',this)">Alla <span class="f-count" id="c-all">–</span></button>
+      <button class="filter-btn" data-type="perennial" onclick="setFilter('type','perennial',this)">🌸 Perenner <span class="f-count" id="c-perennial">–</span></button>
+      <button class="filter-btn" data-type="shrub" onclick="setFilter('type','shrub',this)">🌿 Buskar <span class="f-count" id="c-shrub">–</span></button>
+      <button class="filter-btn" data-type="tree" onclick="setFilter('type','tree',this)">🌳 Träd <span class="f-count" id="c-tree">–</span></button>
+      <button class="filter-btn" data-type="bulb" onclick="setFilter('type','bulb',this)">🧅 Lökar <span class="f-count" id="c-bulb">–</span></button>
+      <button class="filter-btn" data-type="seed" onclick="setFilter('type','seed',this)">🌱 Frön <span class="f-count" id="c-seed">–</span></button>
+      <button class="filter-btn" data-type="grass" onclick="setFilter('type','grass',this)">🎋 Gräs <span class="f-count" id="c-grass">–</span></button>
+      <button class="filter-btn" data-type="annual" onclick="setFilter('type','annual',this)">🌻 Annueller <span class="f-count" id="c-annual">–</span></button>
+      <button class="filter-btn" data-type="tool" onclick="setFilter('type','tool',this)">🔧 Verktyg <span class="f-count" id="c-tool">–</span></button>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">Sol & skugga</div>
+      <button class="filter-btn active" data-sun="" onclick="setFilter('sun','',this)">Alla</button>
+      <button class="filter-btn" data-sun="sun" onclick="setFilter('sun','sun',this)">☀️ Full sol</button>
+      <button class="filter-btn" data-sun="part" onclick="setFilter('sun','part',this)">⛅ Halvskugga</button>
+      <button class="filter-btn" data-sun="shade" onclick="setFilter('sun','shade',this)">🌥️ Skugga</button>
+    </div>
+
+    <button class="clear-btn" onclick="clearAll()">↺ Rensa filter</button>
+  </aside>
+
+  <main class="main">
+    <div class="active-chips" id="activeChips"></div>
+    <div class="toolbar">
+      <div class="res-count" id="resCount">Laddar…</div>
+      <select class="sort-select" onchange="setSort(this.value)">
+        <option value="name">A – Ö</option>
+        <option value="price">Lägsta pris</option>
+        <option value="zone">Härdighetszon</option>
+      </select>
+    </div>
+    <div class="plant-grid" id="grid">
+      <div class="empty"><span class="spinner"></span> Hämtar växter…</div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </main>
+</div>
+
+<script>
+  const API = 'https://web-production-cc863.up.railway.app';
+  const typeEmoji = { perennial:'🌸', shrub:'🌿', tree:'🌳', bulb:'🧅', seed:'🌱', grass:'🎋', annual:'🌻', tool:'🔧', vegetable:'🥕', herb:'🌿' };
+  const typeLabel = { perennial:'Perenn', shrub:'Buske', tree:'Träd', bulb:'Lök', seed:'Frö', grass:'Gräs', annual:'Annuell', tool:'Verktyg', vegetable:'Grönsak', herb:'Ört' };
+  const typeNames = { perennial:'Perenner', shrub:'Buskar', tree:'Träd', bulb:'Lökar', seed:'Frön', grass:'Prydnadsgräs', annual:'Annueller', tool:'Verktyg' };
+
+  let all = [], filtered = [];
+  let filters = { type: '', sun: '', q: '' };
+  let sort = 'name', page = 1;
+  const PER = 20;
+
+  function sunLabel(s) {
+    if (!s) return null;
+    if (s.includes('part')) return '⛅ Halvskugga';
+    if (s.includes('shade')) return '🌥️ Skugga';
+    if (s.includes('sun')) return '☀️ Sol';
+    return null;
+  }
+
+  async function init() {
+    // Read URL params
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('type')) filters.type = params.get('type');
+    if (params.get('q')) filters.q = params.get('q');
+
+    try {
+      const r = await fetch(`${API}/plants?limit=100`);
+      const d = await r.json();
+      all = d.plants || [];
+      updateCounts();
+
+      // Set active sidebar button
+      if (filters.type) {
+        document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`[data-type="${filters.type}"]`);
+        if (btn) btn.classList.add('active');
+      }
+      if (filters.q) {
+        document.getElementById('searchInput').value = filters.q;
+      }
+
+      // Update page title
+      if (filters.type && typeNames[filters.type]) {
+        document.getElementById('pageTitle').textContent = typeNames[filters.type];
+        document.title = `${typeNames[filters.type]} – Plantpriset`;
+      }
+
+      applyFilters();
+    } catch(e) {
+      document.getElementById('grid').innerHTML = `<div class="empty"><div class="e-icon">😔</div><p>Kunde inte ladda växter.</p></div>`;
+    }
+  }
+
+  function updateCounts() {
+    document.getElementById('c-all').textContent = all.length;
+    ['perennial','shrub','tree','bulb','seed','grass','annual','tool'].forEach(t => {
+      const el = document.getElementById(`c-${t}`);
+      if (el) el.textContent = all.filter(p => p.plant_type === t).length;
+    });
+    document.getElementById('pageSubtitle').textContent = `${all.length} växter från svenska butiker`;
+  }
+
+  function setFilter(key, val, btn) {
+    filters[key] = val;
+    btn.closest('.filter-group').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    page = 1;
+    applyFilters();
+    updateURL();
+  }
+
+  function setSort(val) { sort = val; applyFilters(); }
+
+  function clearAll() {
+    filters = { type: '', sun: '', q: '' };
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[data-type=""]').forEach(b => b.classList.add('active'));
+    document.querySelectorAll('[data-sun=""]').forEach(b => b.classList.add('active'));
+    page = 1;
+    applyFilters();
+    history.replaceState({}, '', 'vaxter.html');
+  }
+
+  function updateURL() {
+    const p = new URLSearchParams();
+    if (filters.type) p.set('type', filters.type);
+    if (filters.q) p.set('q', filters.q);
+    history.replaceState({}, '', `vaxter.html${p.toString() ? '?' + p : ''}`);
+  }
+
+  function applyFilters() {
+    const q = filters.q.toLowerCase();
+    filtered = all.filter(p => {
+      if (filters.type && p.plant_type !== filters.type) return false;
+      if (filters.sun && (!p.sun_req || !p.sun_req.includes(filters.sun))) return false;
+      if (q && !`${p.common_name_sv||''} ${p.latin_name||''} ${p.common_name_en||''}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+
+    filtered.sort((a,b) => {
+      if (sort === 'name') return (a.common_name_sv||'').localeCompare(b.common_name_sv||'','sv');
+      if (sort === 'price') return (a.lowest_price||9999) - (b.lowest_price||9999);
+      if (sort === 'zone') return (a.hardiness_zone||'').localeCompare(b.hardiness_zone||'');
+      return 0;
+    });
+
+    renderChips();
+    renderGrid();
+    renderPagination();
+
+    const showing = Math.min(filtered.length - (page-1)*PER, PER);
+    document.getElementById('resCount').innerHTML =
+      `Visar <strong>${Math.max(0,showing)}</strong> av <strong>${filtered.length}</strong> växter`;
+  }
+
+  function renderChips() {
+    const chips = [];
+    if (filters.type) chips.push(`<div class="chip">${typeNames[filters.type]||filters.type} <button onclick="clearFilter('type')">×</button></div>`);
+    if (filters.sun) chips.push(`<div class="chip">${sunLabel(filters.sun)||filters.sun} <button onclick="clearFilter('sun')">×</button></div>`);
+    if (filters.q) chips.push(`<div class="chip">Sökning: "${filters.q}" <button onclick="clearFilter('q')">×</button></div>`);
+    document.getElementById('activeChips').innerHTML = chips.join('');
+  }
+
+  function clearFilter(key) {
+    filters[key] = '';
+    if (key === 'type') { document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active')); document.querySelector('[data-type=""]').classList.add('active'); }
+    if (key === 'sun') { document.querySelectorAll('[data-sun]').forEach(b => b.classList.remove('active')); document.querySelector('[data-sun=""]').classList.add('active'); }
+    if (key === 'q') document.getElementById('searchInput').value = '';
+    page = 1;
+    applyFilters();
+    updateURL();
+  }
+
+  function renderGrid() {
+    const start = (page-1)*PER;
+    const slice = filtered.slice(start, start+PER);
+    if (!slice.length) {
+      document.getElementById('grid').innerHTML = `<div class="empty"><div class="e-icon">🌱</div><p>Inga växter matchar dina filter.</p></div>`;
+      return;
+    }
+    document.getElementById('grid').innerHTML = slice.map((p,i) => `
+      <a href="vaxt.html?slug=${p.slug}" class="plant-card" style="animation-delay:${i*0.025}s">
+        <div class="card-img">${typeEmoji[p.plant_type]||'🌿'}</div>
+        <div class="card-body">
+          ${p.plant_type ? `<div class="type-badge">${typeLabel[p.plant_type]||p.plant_type}</div>` : ''}
+          <div class="card-name">${p.common_name_sv||p.slug}</div>
+          <div class="card-latin">${p.latin_name||''}</div>
+          <div class="card-attrs">
+            ${sunLabel(p.sun_req) ? `<span class="attr">${sunLabel(p.sun_req)}</span>` : ''}
+            ${p.hardiness_zone ? `<span class="attr">Zon ${p.hardiness_zone}</span>` : ''}
+            ${p.height_cm_max ? `<span class="attr">${p.height_cm_max}cm</span>` : ''}
+          </div>
+          <div class="card-foot">
+            <div class="c-price">${p.lowest_price ? `Från <strong>${Number(p.lowest_price).toFixed(0)} kr</strong>` : 'Jämför →'}</div>
+            <span class="c-cta">Se priser →</span>
+          </div>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  function renderPagination() {
+    const total = Math.ceil(filtered.length/PER);
+    if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+    let html = '';
+    if (page > 1) html += `<button class="pg-btn" onclick="goPage(${page-1})">←</button>`;
+    for (let i=1;i<=total;i++) html += `<button class="pg-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    if (page < total) html += `<button class="pg-btn" onclick="goPage(${page+1})">→</button>`;
+    document.getElementById('pagination').innerHTML = html;
+  }
+
+  function goPage(p) { page = p; renderGrid(); renderPagination(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+  document.getElementById('searchInput').addEventListener('input', function() {
+    filters.q = this.value.trim(); page = 1; applyFilters(); updateURL();
+  });
+
+  init();
+</script>
+</body>
+</html>

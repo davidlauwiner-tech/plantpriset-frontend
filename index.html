@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plantpriset – Jämför priser på växter & frön</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #F7F4EF;
+      --dark: #1C1C1A;
+      --green: #3D6B4F;
+      --green-light: #C8DDD0;
+      --warm-gray: #8C8880;
+      --border: #E2DDD7;
+      --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--dark); }
+
+    /* NAV */
+    nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.25rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(247,244,239,0.95); backdrop-filter: blur(8px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; color: var(--dark); text-decoration: none; letter-spacing: -0.02em; }
+    .logo span { color: var(--green); }
+    nav ul { list-style: none; display: flex; gap: 2rem; align-items: center; }
+    nav ul a { text-decoration: none; font-size: 0.875rem; color: var(--warm-gray); transition: color 0.2s; }
+    nav ul a:hover { color: var(--dark); }
+    .nav-cta { background: var(--green) !important; color: #fff !important; padding: 0.5rem 1.1rem; border-radius: 2rem; transition: background 0.2s !important; }
+    .nav-cta:hover { background: #2d5440 !important; }
+
+    /* HERO */
+    .hero { max-width: 900px; margin: 0 auto; padding: 6rem 2rem 3rem; text-align: center; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--green); background: var(--green-light); padding: 0.35rem 0.9rem;
+      border-radius: 2rem; margin-bottom: 2rem;
+    }
+    .hero-tag::before { content: '●'; font-size: 0.5rem; }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 6vw, 5rem);
+      font-weight: 600; line-height: 1.08; letter-spacing: -0.03em;
+      color: var(--dark); margin-bottom: 1.25rem;
+    }
+    h1 em { font-style: italic; color: var(--green); }
+    .hero-sub {
+      font-size: 1.05rem; font-weight: 300; color: var(--warm-gray);
+      line-height: 1.65; max-width: 500px; margin: 0 auto 2.5rem;
+    }
+
+    /* SEARCH */
+    .search-wrap { position: relative; max-width: 580px; margin: 0 auto 1rem; }
+    .search-wrap input {
+      width: 100%; padding: 1.1rem 1.5rem 1.1rem 3.2rem;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem;
+      border: 1.5px solid var(--border); border-radius: 3rem;
+      background: var(--white); color: var(--dark); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-wrap input::placeholder { color: #B5B0AA; }
+    .search-wrap input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(61,107,79,0.1); }
+    .search-icon { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); color: var(--warm-gray); pointer-events: none; }
+    .search-btn {
+      position: absolute; right: 0.4rem; top: 50%; transform: translateY(-50%);
+      background: var(--green); color: #fff; border: none; border-radius: 3rem;
+      padding: 0.65rem 1.4rem; font-family: 'DM Sans', sans-serif; font-size: 0.875rem;
+      font-weight: 500; cursor: pointer; transition: background 0.2s;
+    }
+    .search-btn:hover { background: #2d5440; }
+
+    /* AUTOCOMPLETE */
+    .autocomplete-box {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: var(--white); border: 1.5px solid var(--border); border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 200; overflow: hidden; display: none;
+    }
+    .autocomplete-box.open { display: block; }
+    .ac-item {
+      padding: 0.75rem 1.2rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem;
+      transition: background 0.15s; font-size: 0.9rem;
+    }
+    .ac-item:hover { background: var(--cream); }
+    .ac-item .ac-type { font-size: 0.7rem; color: var(--warm-gray); background: var(--cream); padding: 0.15rem 0.5rem; border-radius: 2rem; margin-left: auto; }
+
+    .hints { font-size: 0.82rem; color: var(--warm-gray); margin-top: 0.85rem; }
+    .hint-chip {
+      display: inline-block; background: var(--white); border: 1px solid var(--border);
+      border-radius: 2rem; padding: 0.3rem 0.8rem; margin: 0.2rem; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .hint-chip:hover { border-color: var(--green); color: var(--green); }
+
+    /* SEARCH RESULTS OVERLAY */
+    #searchResults { max-width: 900px; margin: 1.5rem auto 0; padding: 0 2rem; display: none; }
+    #searchResults.visible { display: block; }
+    .sr-label { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warm-gray); margin-bottom: 1rem; }
+    .sr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.85rem; }
+
+    /* PLANT CARD (shared) */
+    .plant-card {
+      background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; cursor: pointer;
+      transition: border-color 0.2s, transform 0.18s, box-shadow 0.18s;
+      animation: fadeUp 0.25s ease forwards; opacity: 0;
+      text-decoration: none; color: inherit; display: block;
+    }
+    .plant-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.07); }
+    .card-img { height: 100px; background: linear-gradient(135deg, var(--green-light), #e0ede6); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; }
+    .card-body { padding: 0.9rem; }
+    .type-badge { display: inline-block; font-size: 0.67rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); background: var(--green-light); padding: 0.18rem 0.55rem; border-radius: 2rem; margin-bottom: 0.45rem; }
+    .card-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; line-height: 1.2; margin-bottom: 0.15rem; }
+    .card-latin { font-size: 0.73rem; font-style: italic; color: var(--warm-gray); margin-bottom: 0.55rem; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 0.6rem; border-top: 1px solid var(--border); }
+    .card-price { font-size: 0.82rem; color: var(--warm-gray); }
+    .card-price strong { font-size: 0.95rem; color: var(--green); font-weight: 600; }
+    .card-arrow { font-size: 0.8rem; color: var(--green); font-weight: 500; }
+
+    /* STATS */
+    .stats { max-width: 900px; margin: 4rem auto 0; padding: 0 2rem; }
+    .stats-inner { display: flex; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--white); }
+    .stat { flex: 1; padding: 1.5rem 2rem; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 600; line-height: 1; margin-bottom: 0.3rem; }
+    .stat-lbl { font-size: 0.78rem; color: var(--warm-gray); font-weight: 300; }
+
+    /* CATEGORIES */
+    .section { max-width: 900px; margin: 5rem auto 0; padding: 0 2rem; }
+    .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; }
+    .section-head h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 600; letter-spacing: -0.02em; }
+    .section-head a { font-size: 0.85rem; color: var(--green); text-decoration: none; }
+    .section-head a:hover { text-decoration: underline; }
+    .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
+    .cat-card {
+      background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.25rem 1rem; text-align: center; cursor: pointer; text-decoration: none; display: block;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+    .cat-card:hover { border-color: var(--green); background: var(--green-light); transform: translateY(-1px); }
+    .cat-emoji { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .cat-name { font-size: 0.875rem; font-weight: 500; color: var(--dark); margin-bottom: 0.2rem; }
+    .cat-sub { font-size: 0.73rem; color: var(--warm-gray); }
+
+    /* HOW IT WORKS */
+    .how { max-width: 900px; margin: 5rem auto; padding: 0 2rem; }
+    .how-inner { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 3rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+    .how-step { text-align: center; }
+    .how-num { width: 40px; height: 40px; background: var(--green-light); color: var(--green); font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+    .how-title { font-weight: 500; font-size: 0.95rem; margin-bottom: 0.4rem; }
+    .how-desc { font-size: 0.82rem; color: var(--warm-gray); line-height: 1.55; font-weight: 300; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 2rem 3rem; margin-top: 5rem; display: flex; justify-content: space-between; align-items: center; }
+    footer p { font-size: 0.78rem; color: var(--warm-gray); }
+    footer a { color: var(--warm-gray); text-decoration: none; }
+    footer a:hover { color: var(--dark); }
+
+    /* UTILS */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 0.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-msg { text-align: center; padding: 3rem; color: var(--warm-gray); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Plant<span>priset</span></a>
+  <ul>
+    <li><a href="vaxter.html">Växter</a></li>
+    <li><a href="vaxter.html?type=seed">Frön</a></li>
+    <li><a href="vaxter.html?type=tool">Verktyg</a></li>
+    <li><a href="vaxter.html" class="nav-cta">Jämför priser</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-tag">Sveriges trädgårdsprisjämförare</div>
+  <h1>Hitta <em>bästa priset</em><br>på dina växter</h1>
+  <p class="hero-sub">Jämför priser på växter, frön och trädgårdsverktyg från Sveriges ledande butiker — på ett ställe.</p>
+
+  <div class="search-wrap" id="searchWrap">
+    <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Sök efter lavendel, rosor, tomater…" autocomplete="off">
+    <button class="search-btn" onclick="doSearch()">Sök</button>
+    <div class="autocomplete-box" id="acBox"></div>
+  </div>
+  <div class="hints">
+    Populärt:
+    <span class="hint-chip" onclick="quickSearch('lavendel')">Lavendel</span>
+    <span class="hint-chip" onclick="quickSearch('ros')">Rosor</span>
+    <span class="hint-chip" onclick="quickSearch('dahlia')">Dahlia</span>
+    <span class="hint-chip" onclick="quickSearch('hosta')">Hosta</span>
+    <span class="hint-chip" onclick="quickSearch('japansk')">Japansk körsbär</span>
+  </div>
+</section>
+
+<div id="searchResults">
+  <div class="sr-label" id="srLabel"></div>
+  <div class="sr-grid" id="srGrid"></div>
+</div>
+
+<div class="stats">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-num" id="statPlants">48</div><div class="stat-lbl">Växter indexerade</div></div>
+    <div class="stat"><div class="stat-num">5</div><div class="stat-lbl">Svenska butiker</div></div>
+    <div class="stat"><div class="stat-num">Daglig</div><div class="stat-lbl">Prisuppdatering</div></div>
+    <div class="stat"><div class="stat-num">Gratis</div><div class="stat-lbl">Alltid kostnadsfritt</div></div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Bläddra efter kategori</h2>
+    <a href="vaxter.html">Visa alla →</a>
+  </div>
+  <div class="cat-grid">
+    <a href="vaxter.html?type=perennial" class="cat-card"><div class="cat-emoji">🌸</div><div class="cat-name">Perenner</div><div class="cat-sub">Fleråriga</div></a>
+    <a href="vaxter.html?type=shrub" class="cat-card"><div class="cat-emoji">🌿</div><div class="cat-name">Buskar</div><div class="cat-sub">Trädgård</div></a>
+    <a href="vaxter.html?type=tree" class="cat-card"><div class="cat-emoji">🌳</div><div class="cat-name">Träd</div><div class="cat-sub">Prydnad</div></a>
+    <a href="vaxter.html?type=bulb" class="cat-card"><div class="cat-emoji">🧅</div><div class="cat-name">Lökar</div><div class="cat-sub">Blomsterlökar</div></a>
+    <a href="vaxter.html?type=seed" class="cat-card"><div class="cat-emoji">🌱</div><div class="cat-name">Frön</div><div class="cat-sub">Blommor & grönt</div></a>
+    <a href="vaxter.html?type=grass" class="cat-card"><div class="cat-emoji">🎋</div><div class="cat-name">Gräs</div><div class="cat-sub">Prydnadsgräs</div></a>
+    <a href="vaxter.html?type=annual" class="cat-card"><div class="cat-emoji">🌻</div><div class="cat-name">Annueller</div><div class="cat-sub">Ettåriga</div></a>
+    <a href="vaxter.html?type=tool" class="cat-card"><div class="cat-emoji">🔧</div><div class="cat-name">Verktyg</div><div class="cat-sub">Trädgård</div></a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Utvalda växter</h2>
+    <a href="vaxter.html">Alla växter →</a>
+  </div>
+  <div class="sr-grid" id="featuredGrid">
+    <div class="loading-msg" style="grid-column:1/-1"><span class="spinner"></span> Laddar…</div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="section-head" style="margin-bottom:2rem">
+    <h2>Så fungerar det</h2>
+  </div>
+  <div class="how-inner">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <div class="how-title">Sök din växt</div>
+      <div class="how-desc">Skriv in namnet på den växt, det frö eller det verktyg du letar efter.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <div class="how-title">Jämför priser</div>
+      <div class="how-desc">Vi visar aktuella priser från Plantagen, Granngården, Wexthuset och fler.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <div class="how-title">Köp billigast</div>
+      <div class="how-desc">Klicka vidare till butiken med bästa priset och köp direkt därifrån.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Plantpriset · <a href="#">Core Maison AB</a></p>
+  <p><a href="#">Om oss</a> · <a href="#">Integritetspolicy</a> · <a href="#">Kontakt</a></p>
+</footer>
+
+<script>
+  const API = 'https://web-production-cc863.up.railway.app';
+  const typeEmoji = { perennial:'🌸', shrub:'🌿', tree:'🌳', bulb:'🧅', seed:'🌱', grass:'🎋', annual:'🌻', tool:'🔧', vegetable:'🥕', herb:'🌿' };
+  const typeLabel = { perennial:'Perenn', shrub:'Buske', tree:'Träd', bulb:'Lök', seed:'Frö', grass:'Gräs', annual:'Annuell', tool:'Verktyg', vegetable:'Grönsak', herb:'Ört' };
+
+  let allPlants = [];
+  let acTimeout;
+
+  function plantCard(p, delay) {
+    return `<a href="vaxt.html?slug=${p.slug}" class="plant-card" style="animation-delay:${delay}s">
+      <div class="card-img">${typeEmoji[p.plant_type] || '🌿'}</div>
+      <div class="card-body">
+        ${p.plant_type ? `<div class="type-badge">${typeLabel[p.plant_type] || p.plant_type}</div>` : ''}
+        <div class="card-name">${p.common_name_sv || p.slug}</div>
+        <div class="card-latin">${p.latin_name || ''}</div>
+        <div class="card-footer">
+          <div class="card-price">${p.lowest_price ? `Från <strong>${Number(p.lowest_price).toFixed(0)} kr</strong>` : 'Jämför →'}</div>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>`;
+  }
+
+  // Featured plants
+  fetch(`${API}/plants?limit=8`)
+    .then(r => r.json())
+    .then(d => {
+      allPlants = d.plants || [];
+      document.getElementById('statPlants').textContent = d.total || allPlants.length;
+      document.getElementById('featuredGrid').innerHTML = allPlants.slice(0,8).map((p,i) => plantCard(p, i*0.04)).join('');
+    })
+    .catch(() => { document.getElementById('featuredGrid').innerHTML = ''; });
+
+  // Autocomplete
+  const input = document.getElementById('searchInput');
+  const acBox = document.getElementById('acBox');
+
+  input.addEventListener('input', () => {
+    clearTimeout(acTimeout);
+    const q = input.value.trim();
+    if (q.length < 2) { acBox.classList.remove('open'); return; }
+    acTimeout = setTimeout(() => {
+      fetch(`${API}/search?q=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(d => {
+          const results = (d.results || []).slice(0,6);
+          if (!results.length) { acBox.classList.remove('open'); return; }
+          acBox.innerHTML = results.map(p => `
+            <div class="ac-item" onclick="window.location='vaxt.html?slug=${p.slug}'">
+              <span>${typeEmoji[p.plant_type] || '🌿'}</span>
+              <span>${p.common_name_sv || p.slug}</span>
+              <span class="ac-type">${typeLabel[p.plant_type] || ''}</span>
+            </div>
+          `).join('');
+          acBox.classList.add('open');
+        });
+    }, 200);
+  });
+
+  document.addEventListener('click', e => {
+    if (!document.getElementById('searchWrap').contains(e.target)) acBox.classList.remove('open');
+  });
+
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { acBox.classList.remove('open'); doSearch(); } });
+
+  function quickSearch(q) { input.value = q; doSearch(); }
+
+  function doSearch() {
+    const q = input.value.trim();
+    if (!q) return;
+    window.location = `vaxter.html?q=${encodeURIComponent(q)}`;
+  }
+</script>
+</body>
+</html>
